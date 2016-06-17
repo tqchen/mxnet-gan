@@ -1,6 +1,6 @@
 # MXNet GAN
 
-MXNet module implementation of multi GPU compatible generative models.
+[MXNet](https://github.com/dmlc/mxnet) module implementation of multi GPU compatible generative models.
 
 ## Usage
 
