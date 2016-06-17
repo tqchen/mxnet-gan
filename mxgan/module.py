@@ -42,11 +42,14 @@ class GANModule(object):
                                   label_names=None,
                                   context=context)
         # discriminator
-        encoder = self._init_classifier(symbol_encoder)
+        encoder, label_shape = self._init_classifier(symbol_encoder)
         self.modD = mx.mod.Module(symbol=encoder,
                                   data_names=("data",),
                                   label_names=("dloss_label",),
                                   context=context)
+        self.modD.bind(data_shapes=[("data", data_shape)],
+                       label_shapes=[("dloss_label", label_shape)],
+                       inputs_need_grad=True)
         self.temp_label = None
         self.temp_outG = None
         self.temp_diffD = None
@@ -56,18 +59,14 @@ class GANModule(object):
         self.outputs_fake = None
         self.outputs_real = None
         self.modG.bind(data_shapes=[("code", code_shape)])
-        self.modD.bind(data_shapes=[("data", data_shape)],
-                       label_shapes=[("dloss_label", (self.batch_size,))],
-                       inputs_need_grad=True)
-
-        self.temp_label = mx.nd.zeros((self.batch_size,), ctx=self.context[0])
+        self.temp_label = mx.nd.zeros(label_shape, ctx=self.context[0])
         self.temp_rbatch = mx.io.DataBatch(
             [mx.nd.zeros(code_shape, ctx=self.context[-1])], None)
 
     def _init_classifier(self, encoder):
         encoder = mx.sym.FullyConnected(encoder, num_hidden=1, name="fc_dloss")
         encoder = mx.sym.LogisticRegressionOutput(encoder, name='dloss')
-        return encoder
+        return encoder, (self.batch_size, )
 
     def _save_temp_gradD(self):
         if self.temp_gradD is None:
@@ -104,7 +103,7 @@ class GANModule(object):
         self.modD.backward()
         self._save_temp_gradD()
         # update generator
-        self.temp_label[:] = self.pos_label
+        self.temp_label[:] = 1
         self.modD.forward(mx.io.DataBatch(outG, [self.temp_label]), is_train=True)
         self.modD.backward()
         diffD = self.modD.get_input_grads()
@@ -112,6 +111,7 @@ class GANModule(object):
         self.modG.update()
         self.outputs_fake = [x.copyto(x.context) for x in self.modD.get_outputs()]
         # update discriminator
+        self.temp_label[:] = self.pos_label
         dbatch.label = [self.temp_label]
         self.modD.forward(dbatch, is_train=True)
         self.modD.backward()
@@ -120,18 +120,3 @@ class GANModule(object):
         self.outputs_real = self.modD.get_outputs()
         self.temp_outG = outG
         self.temp_diffD = diffD
-
-
-class GANMeanModule(GANModule):
-    """Variant of GAN with an additional mean vector.
-    """
-    def __init__(self, *args, **kwargs):
-        super(GANMeanModule, self).__init__(*args, **kwargs)
-
-    def _init_classifier(self, encoder):
-        X = mx.sym.sum_axis(encoder, axis=0, keepdims=True) * (1.0 / self.batch_size)
-        X = mx.sym.broadcast_axis(X, axis=0, size=self.batch_size)
-        encoder = mx.sym.Concat(encoder, X)
-        encoder = mx.sym.FullyConnected(encoder, num_hidden=1, name="fc_dloss")
-        encoder = mx.sym.LogisticRegressionOutput(encoder, name='dloss')
-        return encoder
