@@ -1,6 +1,7 @@
 """Collection of operatpors."""
 import numpy as np
 import mxnet as mx
+from .log_sum_exp import log_sum_exp
 
 BatchNorm = mx.sym.CuDNNBatchNorm
 eps = 1e-5 + 1e-12

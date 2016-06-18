@@ -55,7 +55,8 @@ for epoch in range(num_epoch):
     train.reset()
     metric_acc.reset()
     for t, batch in enumerate(train):
-        gmod.update(batch)
+        # can switch between labeled and unlabeled.
+        gmod.update(batch, is_labeled=True)
         gmod.temp_label[:] = 0.0
         metric_acc.update([gmod.temp_label], gmod.outputs_fake)
         gmod.temp_label[:] = 1.0

@@ -2,6 +2,10 @@
 
 [MXNet](https://github.com/dmlc/mxnet) module implementation of multi GPU compatible generative models.
 
+## List of Methods
+- Unsupervised Training
+- Semisupervised Training
+
 ## Usage
 
 ```python

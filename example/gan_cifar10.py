@@ -24,7 +24,7 @@ context = mx.gpu()
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)-15s %(message)s')
 sym_gen = generator.dcgan32x32(oshape=data_shape, ngf=ngf, final_act="tanh")
 sym_dec = encoder.dcgan(ngf=ngf / 2)
-gmod = module.GANMeanModule(
+gmod = module.GANModule(
     sym_gen,
     sym_dec,
     context=context,
