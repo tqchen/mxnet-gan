@@ -23,12 +23,11 @@ context = mx.gpu()
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)-15s %(message)s')
 sym_gen = generator.dcgan28x28(oshape=data_shape, ngf=32, final_act="sigmoid")
 
-gmod = module.SemiGANModule(
+gmod = module.GANModule(
     sym_gen,
     symbol_encoder=encoder.lenet(),
     context=context,
     data_shape=data_shape,
-    num_class=10,
     code_shape=rand_shape)
 
 gmod.init_params(mx.init.Xavier(factor_type="in", magnitude=2.34))
