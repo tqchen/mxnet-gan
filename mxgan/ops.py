@@ -1,25 +1,19 @@
 """Collection of operatpors."""
 import numpy as np
 import mxnet as mx
-from .log_sum_exp import log_sum_exp
+from .custom_ops import log_sum_exp
+from .custom_ops import constant
 
 BatchNorm = mx.sym.CuDNNBatchNorm
 eps = 1e-5 + 1e-12
 
 def deconv2d(data, ishape, oshape, kshape, name, stride=(2, 2)):
     """a deconv layer that enlarges the feature map"""
-    # osize = stride * (isize - 1) + ksize - 2 * pad
-    # pad = (stride * (isize - 1) + ksize - osize) / 2
-    pad0 = (stride[0] * (ishape[-2] - 1) + kshape[0] - oshape[-2])
-    pad1 = (stride[1] * (ishape[-1] - 1) + kshape[1] - oshape[-1])
-    assert pad0 >= 0
-    assert pad1 >= 0
-    assert pad0 % 2 == 0
-    assert pad1 % 2 == 0
+    target_shape = (oshape[-2], oshape[-1])
     net = mx.sym.Deconvolution(data,
                                kernel=kshape,
                                stride=stride,
-                               pad=(pad0 / 2, pad1/2),
+                               target_shape=target_shape,
                                num_filter=oshape[0],
                                no_bias=True,
                                name=name)
@@ -44,3 +38,24 @@ def conv2d_bn_leaky(data, prefix, **kwargs):
     net = BatchNorm(net, fix_gamma=True, eps=eps, name="%s_bn" % prefix)
     net = mx.sym.LeakyReLU(net, act_type="leaky", name="%s_leaky" % prefix)
     return net
+
+
+def minibatch_layer(data, batch_size, num_kernels, num_dim=5):
+    net = mx.sym.FullyConnected(data,
+                                num_hidden=num_kernels*num_dim,
+                                no_bias=True)
+    net = mx.sym.Reshape(net, shape=(-1, num_kernels, num_dim))
+    a = mx.sym.expand_dims(net, axis=3)
+    b = mx.sym.expand_dims(
+        mx.sym.transpose(net, axes=(1, 2, 0)), axis=0)
+    abs_dif = mx.sym.abs(mx.sym.broadcast_minus(a, b))
+    # batch, num_kernels, batch
+    abs_dif = mx.sym.sum(abs_dif, axis=2)
+    mask = np.eye(batch_size)
+    mask = np.expand_dims(mask, 1)
+    mask = 1.0 - mask
+    rscale = 1.0 / np.sum(mask)
+    # multiply by mask and rescale
+    out = mx.sym.sum(mx.sym.broadcast_mul(abs_dif, constant(mask)), axis=2) * rscale
+
+    return mx.sym.Concat(data, out)

@@ -1,20 +1,11 @@
-# MXNet GAN
-
-[MXNet](https://github.com/dmlc/mxnet) module implementation of multi GPU compatible generative models.
-
-## List of Methods
-- Unsupervised Training
-- Semisupervised Training
-- Minibatch discrimation
-
-## Usage
-
-```python
 import logging
 import numpy as np
 import mxnet as mx
+import sys
 
-from mxgan import module, generator, encoder, viz
+sys.path.append("..")
+
+from mxgan import module, generator, encoder, viz, ops
 
 def ferr(label, pred):
     pred = pred.ravel()
@@ -31,10 +22,12 @@ context = mx.gpu()
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)-15s %(message)s')
 sym_gen = generator.dcgan28x28(oshape=data_shape, ngf=32, final_act="sigmoid")
+encoder = encoder.lenet()
+encoder = ops.minibatch_layer(encoder, batch_size, num_kernels=100)
 
 gmod = module.GANModule(
     sym_gen,
-    symbol_encoder=encoder.lenet(),
+    symbol_encoder=encoder,
     context=context,
     data_shape=data_shape,
     code_shape=rand_shape)
@@ -71,9 +64,9 @@ for epoch in range(num_epoch):
 
         if t % 100 == 0:
             logging.info("epoch: %d, iter %d, metric=%s", epoch, t, metric_acc.get())
+            continue
             viz.imshow("gout", gmod.temp_outG[0].asnumpy(), 2)
             diff = gmod.temp_diffD[0].asnumpy()
             diff = (diff - diff.mean()) / diff.std() + 0.5
             viz.imshow("diff", diff)
             viz.imshow("data", batch.data[0].asnumpy(), 2)
-```

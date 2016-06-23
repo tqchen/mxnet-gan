@@ -40,7 +40,7 @@ def dcgan28x28(oshape, final_act, ngf=128, code=None):
     net = mx.sym.Reshape(net, shape=(-1, ngf*4, 4, 4))
     # 8 x 8
     net = deconv2d_bn_relu(
-        net, ishape=(ngf * 4, 4, 4), oshape=(ngf * 2, 8, 8), kshape=(4, 4), prefix="g2")
+        net, ishape=(ngf * 4, 4, 4), oshape=(ngf * 2, 8, 8), kshape=(3, 3), prefix="g2")
     # 14x14
     net = deconv2d_bn_relu(
         net, ishape=(ngf * 2, 8, 8), oshape=(ngf, 14, 14), kshape=(4, 4), prefix="g3")
