@@ -25,7 +25,7 @@ def dcgan32x32(oshape, final_act, ngf=128, code=None):
         net, ishape=(ngf * 2, 8, 8), oshape=(ngf, 16, 16), kshape=(4, 4), prefix="g3")
     # 32x32
     net = deconv2d_act(
-        net, ishape=(ngf, 16, 16), oshape=oshape[1:], kshape=(4, 4), prefix="g4", act_type=final_act)
+        net, ishape=(ngf, 16, 16), oshape=oshape[-3:], kshape=(4, 4), prefix="g4", act_type=final_act)
     return net
 
 
@@ -46,7 +46,7 @@ def dcgan28x28(oshape, final_act, ngf=128, code=None):
         net, ishape=(ngf * 2, 8, 8), oshape=(ngf, 14, 14), kshape=(4, 4), prefix="g3")
     # 28x28
     net = deconv2d_act(
-        net, ishape=(ngf, 14, 14), oshape=oshape[1:], kshape=(4, 4), prefix="g4", act_type=final_act)
+        net, ishape=(ngf, 14, 14), oshape=oshape[-3:], kshape=(4, 4), prefix="g4", act_type=final_act)
     return net
 
 
