@@ -34,4 +34,5 @@ def dcgan(data=None, ngf=128):
     net = conv2d_bn_leaky(net, kernel=(4, 4), stride=(2, 2), pad=(1, 1), num_filter=ngf*2, prefix="e2")
     # 512, 4, 4
     net = conv2d_bn_leaky(net, kernel=(4, 4), stride=(2, 2), pad=(1, 1), num_filter=ngf*4, prefix="e3")
+    net = mx.sym.Flatten(net)
     return net
