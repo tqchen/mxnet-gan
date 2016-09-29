@@ -4,7 +4,7 @@ import mxnet as mx
 from .custom_ops import log_sum_exp
 from .custom_ops import constant
 
-BatchNorm = mx.sym.CuDNNBatchNorm
+BatchNorm = mx.sym.BatchNorm
 eps = 1e-5 + 1e-12
 
 def deconv2d(data, ishape, oshape, kshape, name, stride=(2, 2)):
