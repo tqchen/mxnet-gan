@@ -24,6 +24,8 @@ def layout(X, flip=False):
         _fill_buf(buff, i, img, X.shape[1:3])
     if buff.shape[-1] == 1:
         return buff.reshape(buff.shape[0], buff.shape[1])
+    if X.shape[-1] != 1:
+        buff = cv2.cvtColor(buff, cv2.COLOR_BGR2RGB)
     return buff
 
 
@@ -31,7 +33,5 @@ def imshow(title, X, waitsec=1, flip=False):
     """Show images in X and wait for wait sec.
     """
     buff = layout(X)
-    if X.shape[-1] != 1:
-        buff = cv2.cvtColor(buff, cv2.COLOR_BGR2RGB)
     cv2.imshow(title, buff)
     cv2.waitKey(waitsec)
