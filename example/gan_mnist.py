@@ -62,6 +62,7 @@ for epoch in range(num_epoch):
 
         if t % 100 == 0:
             logging.info("epoch: %d, iter %d, metric=%s", epoch, t, metric_acc.get())
+
             viz.imshow("gout", gmod.temp_outG[0].asnumpy(), 2)
             diff = gmod.temp_diffD[0].asnumpy()
             diff = (diff - diff.mean()) / diff.std() + 0.5

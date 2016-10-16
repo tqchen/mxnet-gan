@@ -32,6 +32,6 @@ def layout(X, flip=False):
 def imshow(title, X, waitsec=1, flip=False):
     """Show images in X and wait for wait sec.
     """
-    buff = layout(X)
+    buff = layout(X, flip=flip)
     cv2.imshow(title, buff)
     cv2.waitKey(waitsec)
