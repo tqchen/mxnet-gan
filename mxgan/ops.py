@@ -33,9 +33,11 @@ def deconv2d_act(data, prefix, act_type="relu", **kwargs):
     return net
 
 
-def conv2d_bn_leaky(data, prefix, **kwargs):
+def conv2d_bn_leaky(data, prefix, use_global_stats=False, **kwargs):
     net = mx.sym.Convolution(data, name="%s_conv" % prefix, **kwargs)
-    net = BatchNorm(net, fix_gamma=True, eps=eps, name="%s_bn" % prefix)
+    net = BatchNorm(net, fix_gamma=True, eps=eps,
+                    use_global_stats=use_global_stats,
+                    name="%s_bn" % prefix)
     net = mx.sym.LeakyReLU(net, act_type="leaky", name="%s_leaky" % prefix)
     return net
 
